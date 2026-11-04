@@ -4,7 +4,7 @@
 Reproduzierbare Auswertung. Liest ausschließlich die unveränderten Quelldateien aus
 ../Quelldateien und erzeugt:
   ../NA98_Temperaturauswertung_2025-2026.csv
-  ../NA98_Witterungsnachweis.pdf
+  ../NA98_Interne_Pruefung.pdf (interner Prüfvermerk)
 
 Aufruf:  python3 Skripte/na98_auswertung.py   (benötigt reportlab)
 """
@@ -588,7 +588,7 @@ for i in range(1, len(data)):
 t.setStyle(TableStyle(ts))
 story.append(t)
 
-doc = SimpleDocTemplate(os.path.join(BASE, "NA98_Witterungsnachweis.pdf"), pagesize=A4,
+doc = SimpleDocTemplate(os.path.join(BASE, "NA98_Interne_Pruefung.pdf"), pagesize=A4,
                         leftMargin=18 * mm, rightMargin=18 * mm, topMargin=15 * mm, bottomMargin=18 * mm,
                         title="NA 98 – Witterungsnachweis Lufttemperatur DWD Rheinstetten 04177",
                         author="Auswertung NA 98 Winterbau KARLA", subject="Temperaturklassen 01.11.2025–31.03.2026")
