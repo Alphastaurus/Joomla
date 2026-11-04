@@ -20,7 +20,7 @@
 19.11.2025;4,3;0,5;8,6;A;gültig | DWD QN 9
 20.11.2025;3,4;0,9;5,7;A;gültig | DWD QN 9
 21.11.2025;1,3;-3,5;4,2;A;gültig | DWD QN 9
-22.11.2025;-3,0;-6,7;0,6;A;gültig – Grenzwert exakt -3,0 °C: Klasse A (-3 °C ≤ T) | DWD QN 9
+22.11.2025;-3,0;-6,7;0,6;B;gültig – Grenzwert exakt -3,0 °C: Klasse B (−10 °C ≤ T ≤ −3 °C) | DWD QN 9
 23.11.2025;-2,1;-6,2;1,7;A;gültig | DWD QN 9
 24.11.2025;4,5;1,4;7,5;A;gültig | DWD QN 9
 25.11.2025;3,7;-0,7;6,5;A;gültig | DWD QN 9
@@ -65,7 +65,7 @@
 03.01.2026;-0,4;-1,8;1,2;A;gültig | DWD QN 9
 04.01.2026;-1,6;-7,9;2,0;A;gültig | DWD QN 9
 05.01.2026;-5,5;-9,5;-1,4;B;gültig | DWD QN 9
-06.01.2026;-3,0;-5,5;-1,8;A;gültig – Grenzwert exakt -3,0 °C: Klasse A (-3 °C ≤ T) | DWD QN 9
+06.01.2026;-3,0;-5,5;-1,8;B;gültig – Grenzwert exakt -3,0 °C: Klasse B (−10 °C ≤ T ≤ −3 °C) | DWD QN 9
 07.01.2026;-2,8;-8,5;0,7;A;gültig | DWD QN 9
 08.01.2026;1,9;-0,9;7,7;A;gültig | DWD QN 9
 09.01.2026;7,2;3,4;9,5;D;gültig | DWD QN 9

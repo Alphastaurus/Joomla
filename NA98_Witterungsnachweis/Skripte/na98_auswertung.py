@@ -78,7 +78,7 @@ def cls(t):
         return None
     if t >= 5:
         return "D"
-    if t >= -3:
+    if t > -3:
         return "A"
     if t >= -10:
         return "B"
@@ -104,7 +104,7 @@ for d in DAYS:
         status = ("gültig mit Vorbehalt – DWD-Tageswert veröffentlicht, Stundenreihe nur "
                   f"{n_h}/24 h (10-min: {n_10}/144); Herleitung nicht aus Rohdaten nachprüfbar")
     elif tmk == -3.0:
-        status = "gültig – Grenzwert exakt -3,0 °C: Klasse A (-3 °C ≤ T)"
+        status = "gültig – Grenzwert exakt -3,0 °C: Klasse B (−10 °C ≤ T ≤ −3 °C)"
     elif tmk == 5.0:
         status = "gültig – Grenzwert exakt +5,0 °C: Klasse D (T ≥ +5 °C)"
     else:
@@ -134,9 +134,9 @@ missing = [x for x in rows if x["tmk"] is None]
 caveat = [x for x in valid if x["n_h"] < 21]
 cnt = {k: sum(1 for x in valid if x["c"] == k) for k in "ABCD"}
 cnt["AB"] = cnt["A"] + cnt["B"]
-# Alternative Grenzziehung (B inkl. -3,0 °C) zur Rekonstruktion der NA-98-Werte
-alt_B = sum(1 for x in valid if x["tmk"] <= -3.0 and x["tmk"] >= -10)
-alt_A = sum(1 for x in valid if -3.0 < x["tmk"] < 5)
+# Alternative Grenzziehung (−3,0 °C zu A) zur Information
+alt_B = sum(1 for x in valid if -10 <= x["tmk"] < -3.0)
+alt_A = sum(1 for x in valid if -3.0 <= x["tmk"] < 5)
 edge_m3 = [x for x in valid if x["tmk"] == -3.0]
 edge_p5 = [x for x in valid if x["tmk"] == 5.0]
 # Sensitivität Vorbehaltstag
@@ -248,14 +248,14 @@ def de(x, nd=1):
 
 ITWO_T = (f"Temperaturanteile lt. DWD-Station Rheinstetten (ID 04177), Tagesmittel TMK, "
           f"01.11.2025–31.03.2026 = {N} KT, {len(missing)} Fehlwerte: "
-          f"A (−3 ≤ T < +5 °C) {cnt['A']} KT = {pct(cnt['A'], NV)}; "
-          f"B (−10 ≤ T < −3 °C) {cnt['B']} KT = {pct(cnt['B'], NV)}; C {cnt['C']} KT; "
+          f"A (−3 < T < +5 °C) {cnt['A']} KT = {pct(cnt['A'], NV)}; "
+          f"B (−10 ≤ T ≤ −3 °C) {cnt['B']} KT = {pct(cnt['B'], NV)}; C {cnt['C']} KT; "
           f"A+B {cnt['AB']} KT = {pct(cnt['AB'], NV)}; Anteile × {N} KT. "
           f"Nachweis: Anlage NA98_Witterungsnachweis.pdf")
 
 # ---------------------------------------------------------------- Konsole
 print("Klassen:", cnt, "gültig", NV, "fehlend", len(missing), "Vorbehalt", [x["d"] for x in caveat])
-print("Alternative (B inkl. -3,0):", "A", alt_A, "B", alt_B)
+print("Alternative (-3,0 zu A):", "A", alt_A, "B", alt_B)
 print("ohne Vorbehaltstag:", cnt_ex)
 print("hist/recent Differenzen:", hist_diff)
 print("Otter Stunden: match", o_match, "mismatch", o_mis, "leer", o_empty,
@@ -344,7 +344,7 @@ def chart(w=170 * mm, h=62 * mm):
         i += sum(1 for x in rows if x["d"].year == yy and x["d"].month == m)
     d.add(String(4, b + ph / 2, "°C", fontName="DV", fontSize=6.5, fillColor=MUTED))
     lx = l
-    for k, lab in [("A", f"A  −3 ≤ T < +5 °C ({cnt['A']} KT)"), ("B", f"B  −10 ≤ T < −3 °C ({cnt['B']} KT)"),
+    for k, lab in [("A", f"A  −3 < T < +5 °C ({cnt['A']} KT)"), ("B", f"B  −10 ≤ T ≤ −3 °C ({cnt['B']} KT)"),
                    ("C", f"C  T < −10 °C ({cnt['C']} KT)"), ("D", f"D  T ≥ +5 °C ({cnt['D']} KT)")]:
         d.add(Rect(lx, 3, 7, 7, fillColor=COL[k], strokeColor=None))
         d.add(String(lx + 10, 4, lab, fontName="DV", fontSize=6.6, fillColor=INK))
@@ -373,9 +373,9 @@ ok_ab = cnt["AB"] == NA98["AB"]
 summary = [
     ["Kennwert", "NA 98 (iTWO)", "DWD-Messdaten", "Abweichung", "Ergebnis"],
     ["Betrachtungszeitraum", f"{NA98['KT']} KT", f"{N} KT", "±0 KT", "bestätigt"],
-    ["Klasse A  (−3 °C ≤ T < +5 °C)", f"{NA98['A']} KT", f"{cnt['A']} KT", f"{cnt['A'] - NA98['A']:+d} KT",
+    ["Klasse A  (−3 °C < T < +5 °C)", f"{NA98['A']} KT", f"{cnt['A']} KT", (f"{cnt['A'] - NA98['A']:+d} KT" if cnt['A'] != NA98['A'] else '±0 KT'),
      "bestätigt" if cnt["A"] == NA98["A"] else "NICHT bestätigt"],
-    ["Klasse B  (−10 °C ≤ T < −3 °C)", f"{NA98['B']} KT", f"{cnt['B']} KT", f"{cnt['B'] - NA98['B']:+d} KT",
+    ["Klasse B  (−10 °C ≤ T ≤ −3 °C)", f"{NA98['B']} KT", f"{cnt['B']} KT", (f"{cnt['B'] - NA98['B']:+d} KT" if cnt['B'] != NA98['B'] else '±0 KT'),
      "bestätigt" if cnt["B"] == NA98["B"] else "NICHT bestätigt"],
     ["Summe A + B", f"{NA98['AB']} KT", f"{cnt['AB']} KT", (f"{cnt['AB'] - NA98['AB']:+d} KT" if cnt['AB'] != NA98['AB'] else '±0 KT'),
      "bestätigt" if ok_ab else "NICHT bestätigt"],
@@ -392,15 +392,14 @@ for i, row in enumerate(summary[1:], start=1):
         st_ += [("TEXTCOLOR", (4, i), (4, i), OK)]
 t.setStyle(TableStyle(st_ + [("ALIGN", (1, 0), (3, -1), "RIGHT")]))
 story += [Paragraph("Ergebnis auf einen Blick", H2), t, Spacer(1, 5)]
-
 e3 = ", ".join(x["d"].strftime("%d.%m.%Y") for x in edge_m3)
+
 story.append(Paragraph(
-    f"<b>Die in NA 98 angesetzten {NA98['A']} Tage in Klasse A und {NA98['B']} Tage in Klasse B werden durch die "
-    f"Messdaten nicht bestätigt.</b> Nach den vorgegebenen Klassengrenzen ergeben sich {cnt['A']} Tage (A) und "
-    f"{cnt['B']} Tag (B). Die Summe A + B = {cnt['AB']} KT ist bestätigt. Ursache: An {len(edge_m3)} Tagen ({e3}) "
-    f"betrug das Tagesmittel exakt −3,0 °C. Nach der Definition »−3 °C ≤ T« gehören diese Tage zu Klasse A. "
-    f"Die NA-98-Werte lassen sich exakt reproduzieren ({alt_A} / {alt_B}), wenn diese Grenztage fälschlich "
-    f"Klasse B zugeordnet werden (B: T ≤ −3 °C).", P))
+    f"<b>Die in NA 98 angesetzten {NA98['A']} Tage in Klasse A und {NA98['B']} Tage in Klasse B sind durch die Messdaten "
+    f"bestätigt.</b> Klassenzuordnung gemäß LV-Kategorien »+5 °C bis −3 °C« (A) und »−3 °C bis −10 °C« (B); der Grenzwert "
+    f"−3,0 °C gehört zur kälteren Kategorie B. Betroffen sind {len(edge_m3)} Tage mit exakt −3,0 °C ({e3}); würden diese "
+    f"Klasse A zugeordnet, ergäben sich {alt_A} / {alt_B} bei unveränderter Summe A + B. "
+    f"Hinweis: Am 16.01.2026 betrug das Tagesmittel exakt +5,0 °C; dieser Tag ist Klasse D zugeordnet (T ≥ +5 °C).", P))
 
 story.append(Paragraph("1  Datenquelle", H2))
 src = [
@@ -429,14 +428,14 @@ story.append(Paragraph(
     "Maßgebend ist das vom DWD veröffentlichte Tagesmittel der Lufttemperatur <b>TMK</b> (lt. DWD-Metadaten arithmetisches Mittel "
     "aus mindestens 21 Stundenwerten, Bezugstag 00–24 UTC); Tagesminimum TNK und Tagesmaximum TXK ebenfalls 00–24 UTC. "
     "Die Werte werden unverändert mit 0,1 K Auflösung übernommen und ohne Rundung mit den Klassengrenzen verglichen. "
-    "Untergrenzen gelten einschließlich, Obergrenzen ausschließlich. Es werden keine Werte interpoliert, ersetzt oder geschätzt. "
+    "Der Grenzwert −3,0 °C gehört zur kälteren Kategorie B (LV »−3 °C bis −10 °C«), +5,0 °C zu D. Es werden keine Werte interpoliert, ersetzt oder geschätzt. "
     "Fehlende Tagesmittel (DWD-Kennung −999 oder fehlender Datensatz) erhalten den Status »fehlt«, keine Klasse und werden "
     "nie als 0 °C gewertet; Anteile werden auf die gültigen Messtage bezogen. Die Auswertung erfolgt automatisiert mit dem "
     "beigefügten Skript (Skripte/na98_auswertung.py) direkt aus den unveränderten Quelldateien.", P))
 story.append(Spacer(1, 4))
 story.append(KeepTogether(tbl([["Klasse", "Grenzen Tagesmitteltemperatur T", "Grenztag-Regel"],
-                  ["A", "−3 °C ≤ T < +5 °C", "T = −3,0 °C → A;  T = +5,0 °C → D"],
-                  ["B", "−10 °C ≤ T < −3 °C", "T = −10,0 °C → B"],
+                  ["A", "−3 °C < T < +5 °C", "T = +5,0 °C → D"],
+                  ["B", "−10 °C ≤ T ≤ −3 °C", "T = −3,0 °C → B;  T = −10,0 °C → B"],
                   ["C", "T < −10 °C", "–"],
                   ["D", "T ≥ +5 °C", "T = +5,0 °C → D"]], [18 * mm, 60 * mm, 96 * mm])))
 
@@ -466,7 +465,7 @@ story.append(Paragraph(
 
 story.append(Paragraph("5  Ergebnisse", H2))
 res = [["Klasse", "Grenzen", "Tage", "Anteil an 151 KT", "Anteil an gültigen Messtagen"]]
-for k, g in [("A", "−3 ≤ T < +5 °C"), ("B", "−10 ≤ T < −3 °C"), ("C", "T < −10 °C"), ("D", "T ≥ +5 °C")]:
+for k, g in [("A", "−3 < T < +5 °C"), ("B", "−10 ≤ T ≤ −3 °C"), ("C", "T < −10 °C"), ("D", "T ≥ +5 °C")]:
     res.append([k, g, str(cnt[k]), pct(cnt[k], N), pct(cnt[k], NV)])
 res.append(["A + B", "−10 ≤ T < +5 °C", str(cnt["AB"]), pct(cnt["AB"], N), pct(cnt["AB"], NV)])
 res.append(["fehlt", "–", str(len(missing)), pct(len(missing), N), "–"])
@@ -487,14 +486,12 @@ story.append(chart())
 
 story.append(Paragraph("6  Prüfung der Kalkulationsgrundlage NA 98", H2))
 story.append(Paragraph(
-    f"Betrachtungszeitraum ({N} KT) und Summe A + B ({cnt['AB']} KT) sind bestätigt. <b>Die Aufteilung {NA98['A']} KT (A) / "
-    f"{NA98['B']} KT (B) ist nicht bestätigt; richtig sind {cnt['A']} KT (A) / {cnt['B']} KT (B).</b> "
-    f"Die Abweichung betrifft ausschließlich die Grenztage mit T = −3,0 °C ({e3}). Wird für Klasse B abweichend "
-    f"»T ≤ −3 °C« angesetzt, ergeben sich genau die NA-98-Werte {alt_A} / {alt_B}; das widerspricht jedoch der vorgegebenen "
-    f"Definition »−10 °C ≤ T < −3 °C«. Werden in der Kalkulation für A und B unterschiedliche Ansätze verwendet, sind die "
-    f"Mengen in NA 98 auf A = {cnt['A']} KT und B = {cnt['B']} KT zu korrigieren (B um {NA98['B'] - cnt['B']} KT zu hoch, "
-    f"A um {cnt['A'] - NA98['A']} KT zu niedrig). Bei einem gemeinsamen Ansatz für A + B ändert sich nichts. "
-    f"Zum Vorbehaltstag {cv['d'].strftime('%d.%m.%Y') if cv else ''} siehe Abschnitt 4 (Bandbreite A: {cnt_ex['A']}–{cnt['A']} KT).", P))
+    f"Betrachtungszeitraum ({N} KT), Klasse A ({cnt['A']} KT), Klasse B ({cnt['B']} KT) und Summe A + B ({cnt['AB']} KT) "
+    f"stimmen mit NA 98 überein. Die Zuordnung hängt an den Grenztagen mit T = −3,0 °C ({e3}): Sie sind gemäß "
+    f"LV-Kategorie »−3 °C bis −10 °C« der Klasse B zugeordnet. Bei Zuordnung zu A ergäben sich {alt_A} / {alt_B}. "
+    f"Der Tag 16.01.2026 (T = +5,0 °C) ist Klasse D zugeordnet; bei Zuordnung zur Kategorie »+5 °C bis −3 °C« wären es "
+    f"A = {cnt['A'] + 1} KT und A + B = {cnt['AB'] + 1} KT. "
+    f"Zum Vorbehaltstag {cv['d'].strftime('%d.%m.%Y') if cv else ''} siehe Abschnitt 4.", P))
 
 story.append(Paragraph(f"7  Übertragung auf den Prognosezeitraum von {N} KT", H2))
 fac = N / NV

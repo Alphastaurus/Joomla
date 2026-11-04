@@ -55,7 +55,7 @@ def v(x):
 def cls(t):
     if t is None:
         return "–"
-    return "D" if t >= 5 else "A" if t >= -3 else "B" if t >= -10 else "C"
+    return "D" if t >= 5 else "A" if t > -3 else "B" if t >= -10 else "C"
 
 
 def f1(x):
@@ -175,8 +175,8 @@ def pc(n):
 
 
 summ = Table([["Auswertung", "", "", ""], ["Kl.", "Tagesmittel T", "Tage", "Anteil"],
-              ["A", "−3 ≤ T < +5 °C", str(cnt["A"]), pc(cnt["A"])],
-              ["B", "−10 ≤ T < −3 °C", str(cnt["B"]), pc(cnt["B"])],
+              ["A", "−3 < T < +5 °C", str(cnt["A"]), pc(cnt["A"])],
+              ["B", "−10 ≤ T ≤ −3 °C", str(cnt["B"]), pc(cnt["B"])],
               ["C", "T < −10 °C", str(cnt["C"]), pc(cnt["C"])],
               ["D", "T ≥ +5 °C", str(cnt["D"]), pc(cnt["D"])],
               ["A+B", "", str(cnt["A"] + cnt["B"]), pc(cnt["A"] + cnt["B"])],
@@ -202,7 +202,8 @@ for i, grp in enumerate(groups):
         story.append(PageBreak())
 
 legend = ("Werte in °C. Mittel = Tagesmittel (DWD TMK), Min/Max = Tagesminimum/-maximum (TNK/TXK), "
-          "jeweils 00–24 UTC. Kl. = Temperaturklasse nach Tagesmittel.")
+          "jeweils 00–24 UTC. Kl. = Temperaturklasse nach Tagesmittel: A = +5 °C bis −3 °C, B = −3 °C bis −10 °C "
+          "(−3,0 °C zählt zu B), C = unter −10 °C, D = ab +5 °C.")
 story.append(Paragraph(legend, PS))
 for x in notes_h:
     story.append(Paragraph(f"¹ {x['d'].strftime('%d.%m.%Y')}: Stundenwerte 01–11 UTC nicht vorhanden; "
